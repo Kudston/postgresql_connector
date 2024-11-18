@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  mt4-postgresql-connector:
+    container_name: mt4-postgresql-connector
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "${EXTERNAL_PORT:-8000}:8000"
+    restart: unless-stopped
+    volumes:
+      - ./app:/usr/src/mt4-postgresql-connector
+    command: uvicorn main:app --reload --port 8000 --host 0.0.0.0
+    env_file:
+      - .env
+    networks:
+      - mt4_network
+    depends_on:
+      - db
+
+  db:
+    container_name: db
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_USER: kudston
+      POSTGRES_DB: postgres
+    networks:
+      - mt4_network
+
+networks:
+  mt4_network:
+    driver: bridge
