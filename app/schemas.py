@@ -19,9 +19,16 @@ class TableDataIn(BaseModel):
     table_name: str
     data: Dict
 
+class TableDataUpdateIn(BaseModel):
+    table_name: str
+    id: str
+    data: Dict
+
+class SingleTableDataOut(BaseModel):
+    data: Dict
+
 class TableDataOut(BaseModel):
     data: List[Dict]
 
-class DeleteTableResponse(BaseModel):
+class DeleteResponse(BaseModel):
     detail: str
-

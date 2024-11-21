@@ -128,7 +128,7 @@ class DataBaseCrud:
         except Exception as e:
             raise ValueError(str(e))
         
-    def get_table_data(
+    def get_table_datas(
         self, 
         table_name: str, 
         skip: int = 0, 
@@ -142,7 +142,6 @@ class DataBaseCrud:
         if order_by not in column_names:
             raise ValueError(f"Invalid order_by column: {order_by}")
         
-        # Validate order_direction
         if order_direction.lower() not in ['asc', 'desc']:
             raise ValueError("Order direction must be 'asc' or 'desc'")
         
@@ -161,7 +160,87 @@ class DataBaseCrud:
 
         return [dict(zip(column_names, row)) for row in results]
         
-    
+    def update_table_record_by_id(self, table_name: str, id: UUID, data: Dict):
+        try:
+            if not table_name.isalnum():
+                raise ValueError("Invalid table name")
+            
+            inspector = inspect(self.db.bind)
+            if not inspector.has_table(table_name):
+                raise ValueError(f"Table '{table_name}' does not exist")
+
+            table = self.get_table_structure(table_name)
+
+            valid_columns = {col.name for col in table.columns}
+
+            invalid_columns = set(data.keys()) - valid_columns - {'id', 'created_at'}
+
+            if invalid_columns:
+                raise ValueError(f"Invalid columns: {invalid_columns}")
+
+            filtered_data = {
+                k: v for k, v in data.items() 
+                if k in valid_columns and k not in ['id', 'created_at', 'updated_at']
+            }
+
+            if not filtered_data:
+                raise ValueError("No valid columns to update")
+
+            with self.db.begin():
+                update_stmt = (
+                    table.update()
+                    .where(table.c.id == id)
+                    .values(**filtered_data)
+                )
+                result = self.db.execute(update_stmt)
+
+                if result.rowcount == 0:
+                    raise ValueError(f"No record found with id {id}")
+            
+            with self.db.begin():
+                data = (table.select()
+                .where(table.c.id == id)
+                )
+                data = self.db.execute(data)
+            column_names = [col.name for col in table.columns]
+            data = data.first()
+            return dict(zip(column_names,data))
+        except SQLAlchemyError as db_error:
+            raise ValueError(f"Database error: {str(db_error)}")
+        except Exception as e:
+            raise ValueError(str(e))        
+
+    def delete_data_from_table(
+        self,
+        table_name,
+        record_id
+    ):
+        try:
+            if not table_name.isalnum():
+                raise ValueError("Invalid table name")
+            
+            inspector = inspect(self.db.bind)
+            if not inspector.has_table(table_name):
+                raise ValueError(f"Table '{table_name}' does not exist")
+
+            table = self.get_table_structure(table_name)
+
+            with self.db.begin():
+                delete_stmt = (
+                    table.delete()
+                    .where(table.c.id == record_id)
+                )
+                result = self.db.execute(delete_stmt)
+
+                if result.rowcount == 0:
+                    raise ValueError(f"No record found with id {id}")
+
+            return result.rowcount
+        except SQLAlchemyError as db_error:
+            raise ValueError(f"Database error: {str(db_error)}")
+        except Exception as e:
+            raise ValueError(str(e))        
+
     def drop_table_by_name(self,table_name: str):
         try:
             inspector = inspect(self.db.bind)
