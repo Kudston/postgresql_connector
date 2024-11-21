@@ -34,7 +34,7 @@ settings = Settings()
 def welcome():
     return {"detail":"Welcome ..."}
 
-@app.post("/create_table", response_model=TableCreateOut)
+@app.post("/create-table", response_model=TableCreateOut)
 async def create_table(
     table_data: TableSchema,
     db_service: DataBaseService = Depends(initiate_database_service)
@@ -42,7 +42,7 @@ async def create_table(
     result = db_service.create_table(table_data)
     return handle_result(result, TableCreateOut)
 
-@app.post("/insert_data", response_model=TableDataOut)
+@app.post("/insert-data", response_model=TableDataOut)
 async def insert_data(
     data: TableDataIn,
     db_service: DataBaseService = Depends(initiate_database_service)
@@ -52,10 +52,20 @@ async def insert_data(
 
 @app.get("/get-data", response_model=TableDataOut)
 def get_table_data(
-    table_name: str = Query(),
+    table_name: str = Query(), 
+    skip: int = Query(default=0), 
+    limit: int = Query(default=100), 
+    order_direction: str = Query(default="asc"), 
+    order_by: str = Query(default='created_at'),
     db_service: DataBaseService = Depends(initiate_database_service)
 ):
-    result = db_service.get_data(table_name=table_name)
+    result = db_service.get_data(
+        table_name=table_name,
+        skip=skip,
+        limit=limit,
+        order_direction=order_direction,
+        order_by=order_by
+    )
     return handle_result(result, TableDataOut)
 
 @app.delete("/delete-table", response_model=DeleteTableResponse)

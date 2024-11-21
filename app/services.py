@@ -42,10 +42,20 @@ class DataBaseService:
 
     def get_data(
         self,
-        table_name: str
+        table_name: str, 
+        skip: int = 0, 
+        limit: int = 100, 
+        order_direction: str = 'asc', 
+        order_by: str = 'created_at'
     )->Union[ServiceResult, Exception]:
         try:
-            result = self.crud.get_table_data(table_name=table_name)
+            result = self.crud.get_table_data(
+                table_name=table_name,
+                skip=skip,
+                limit=limit,
+                order_direction=order_direction,
+                order_by=order_by
+            )
             
             data = {
                 "data":result

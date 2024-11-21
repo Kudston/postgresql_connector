@@ -4,7 +4,7 @@ from typing import List, Dict
 class ColumnDefinition(BaseModel):
     name: str
     type: str
-    primary_key: bool = False
+    unique: bool = False
     nullable: bool = True
 
 class TableSchema(BaseModel):
