@@ -1,8 +1,18 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.engine import Engine
+from sqlalchemy.dialects.postgresql import UUID
 from typing import Union
 from config import Settings
-from schemas import TableSchema, ColumnDefinition, TableCreateOut, TableDataIn, TableDataOut, DeleteTableResponse
+from schemas import (
+    TableSchema, 
+    ColumnDefinition, 
+    TableCreateOut, 
+    TableDataIn, 
+    TableDataOut, 
+    DeleteResponse,
+    TableDataUpdateIn, 
+    SingleTableDataOut)
+
 from crud import DataBaseCrud
 from service_results import ServiceResult, success_service_result, failed_service_result
 
@@ -40,12 +50,22 @@ class DataBaseService:
         except Exception as raised_exception:
             return failed_service_result(raised_exception)
 
-    def get_data(
+    def get_datas(
         self,
-        table_name: str
+        table_name: str, 
+        skip: int = 0, 
+        limit: int = 100, 
+        order_direction: str = 'asc', 
+        order_by: str = 'created_at'
     )->Union[ServiceResult, Exception]:
         try:
-            result = self.crud.get_table_data(table_name=table_name)
+            result = self.crud.get_table_datas(
+                table_name=table_name,
+                skip=skip,
+                limit=limit,
+                order_direction=order_direction,
+                order_by=order_by
+            )
             
             data = {
                 "data":result
@@ -54,13 +74,47 @@ class DataBaseService:
             return success_service_result(TableDataOut.model_validate(data))
         except Exception as raised_exception:
             return failed_service_result(raised_exception)
-        
+
+    def update_data(
+        self,
+        data: TableDataUpdateIn
+    ) -> Union[ServiceResult, Exception]:
+        try:
+            result = self.crud.update_table_record_by_id(
+                table_name=data.table_name, 
+                id=data.id,
+                data=data.data
+            )
+            data = {
+                'data':result
+            }
+            return success_service_result(SingleTableDataOut.model_validate(data))
+        except Exception as raised_exception:
+            return failed_service_result(raised_exception)
+
+    def delete_record(
+        self,
+        table_name: str,
+        data_id: UUID
+    )->Union[ServiceResult, Exception]:
+        try:
+            result = self.crud.delete_data_from_table(
+                table_name=table_name,
+                record_id=data_id
+            )
+            result = {
+                "detail":f"Deleted {result} row with id: {data_id}"
+            }
+            return success_service_result(DeleteResponse.model_validate(result))
+        except Exception as raised_exception:
+            return failed_service_result(raised_exception)
+
     def delete_table(
         self,
         table_name: str
     )->Union[ServiceResult, Exception]:
         try:
             result = self.crud.drop_table_by_name(table_name=table_name)
-            return success_service_result(DeleteTableResponse.model_validate(result))
+            return success_service_result(DeleteResponse.model_validate(result))
         except Exception as raised_exception:
             return failed_service_result(raised_exception)

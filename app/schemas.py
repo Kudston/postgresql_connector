@@ -4,7 +4,7 @@ from typing import List, Dict
 class ColumnDefinition(BaseModel):
     name: str
     type: str
-    primary_key: bool = False
+    unique: bool = False
     nullable: bool = True
 
 class TableSchema(BaseModel):
@@ -19,9 +19,16 @@ class TableDataIn(BaseModel):
     table_name: str
     data: Dict
 
+class TableDataUpdateIn(BaseModel):
+    table_name: str
+    id: str
+    data: Dict
+
+class SingleTableDataOut(BaseModel):
+    data: Dict
+
 class TableDataOut(BaseModel):
     data: List[Dict]
 
-class DeleteTableResponse(BaseModel):
+class DeleteResponse(BaseModel):
     detail: str
-
