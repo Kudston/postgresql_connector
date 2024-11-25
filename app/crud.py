@@ -210,6 +210,30 @@ class DataBaseCrud:
         except Exception as e:
             raise ValueError(str(e))        
 
+    def get_data_by_id(self, table_name, record_id):
+        try:
+            if not table_name.isalnum():
+                raise ValueError("Invalid table name")
+            
+            inspector = inspect(self.db.bind)
+            if not inspector.has_table(table_name):
+                raise ValueError(f"Table '{table_name}' does not exist")
+
+            table = self.get_table_structure(table_name)
+
+            with self.db.begin():
+                data = (table.select()
+                .where(table.c.id == record_id)
+                )
+                data = self.db.execute(data)
+            column_names = [col.name for col in table.columns]
+            data = data.first()
+            return dict(zip(column_names,data))
+        except SQLAlchemyError as db_error:
+            raise ValueError(f"Database error: {str(db_error)}")
+        except Exception as e:
+            raise ValueError(str(e))
+
     def delete_data_from_table(
         self,
         table_name,

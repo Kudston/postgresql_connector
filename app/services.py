@@ -75,6 +75,22 @@ class DataBaseService:
         except Exception as raised_exception:
             return failed_service_result(raised_exception)
 
+    def get_data_by_id(
+        self,
+        table_name,
+        data_id
+    )->Union[ServiceResult, Exception]:
+        try:
+            result = self.crud.get_data_by_id(
+                table_name=table_name, record_id=data_id
+            )
+            data = {
+                "data":result
+            }
+            return success_service_result(SingleTableDataOut.model_validate(data))
+        except Exception as raised_exception:
+            return failed_service_result(raised_exception)
+
     def update_data(
         self,
         data: TableDataUpdateIn
