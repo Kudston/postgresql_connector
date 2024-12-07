@@ -50,6 +50,18 @@ async def insert_data(
     result = db_service.insert_data(data=data)
     return handle_result(result, TableDataOut)
 
+@app.get("/get-data-by-id", response_model=SingleTableDataOut)
+def get_table_data_id(
+    table_name: str = Query(),
+    data_id: str = Query(),
+    db_service: DataBaseService = Depends(initiate_database_service)
+):
+    result = db_service.get_data_by_id(
+        table_name=table_name,
+        data_id=data_id
+    )
+    return handle_result(result, SingleTableDataOut)
+
 @app.get("/get-datas", response_model=TableDataOut)
 def get_table_data(
     table_name: str = Query(), 
@@ -67,6 +79,15 @@ def get_table_data(
         order_by=order_by
     )
     return handle_result(result, TableDataOut)
+
+@app.get("/send-sql-command")
+def send_sql_command(
+    sql_command: str,
+    db_service: DataBaseService = Depends(initiate_database_service)
+):
+    result = db_service.send_raw_sql_command(sql_command=sql_command)
+    return result
+
 
 @app.put("/update-record", response_model=SingleTableDataOut)
 def update_table_data(
@@ -95,4 +116,3 @@ def delete_table(
 ):
     result = db_service.delete_table(table_name)
     return handle_result(result, expected_schema=DeleteResponse)
-

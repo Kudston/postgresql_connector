@@ -21,7 +21,7 @@ class TableDataIn(BaseModel):
 
 class TableDataUpdateIn(BaseModel):
     table_name: str
-    id: str
+    id: int
     data: Dict
 
 class SingleTableDataOut(BaseModel):

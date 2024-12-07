@@ -58,7 +58,7 @@ class DataBaseCrud:
             metadata = MetaData()
 
             columns = [
-                Column('id', UUID(as_uuid=True), primary_key=True, default=uuid4),
+                Column('id', Integer, primary_key=True, autoincrement=True),
                 Column('created_at', DateTime(timezone=True), server_default=func.now()),
                 Column('updated_at', DateTime(timezone=True), 
                     server_default=func.now(),
@@ -91,7 +91,7 @@ class DataBaseCrud:
 
             return {
                 "message": f"Table '{table_data.table_name}' created successfully",
-                "columns": [{'name': 'id', 'type': 'uuid', 'primary_key':'true', 'nullable':'true'}] + table_data.columns
+                "columns": [{'name': 'id', 'type': 'integer', 'primary_key':'true', 'nullable':'false'}] + table_data.columns
             }
         except SQLAlchemyError as e:
             raise Exception(f"Database error: {str(e)}")
@@ -117,7 +117,7 @@ class DataBaseCrud:
 
             with self.db.begin():
                 filtered_data = {k: v for k, v in data.items() if k in valid_columns}
-                filtered_data['id'] = uuid4()
+                # filtered_data['id'] = uuid4()
                 result = self.db.execute(table.insert().values(**filtered_data))
 
             return {
@@ -210,6 +210,30 @@ class DataBaseCrud:
         except Exception as e:
             raise ValueError(str(e))        
 
+    def get_data_by_id(self, table_name, record_id):
+        try:
+            if not table_name.isalnum():
+                raise ValueError("Invalid table name")
+            
+            inspector = inspect(self.db.bind)
+            if not inspector.has_table(table_name):
+                raise ValueError(f"Table '{table_name}' does not exist")
+
+            table = self.get_table_structure(table_name)
+
+            with self.db.begin():
+                data = (table.select()
+                .where(table.c.id == record_id)
+                )
+                data = self.db.execute(data)
+            column_names = [col.name for col in table.columns]
+            data = data.first()
+            return dict(zip(column_names,data))
+        except SQLAlchemyError as db_error:
+            raise ValueError(f"Database error: {str(db_error)}")
+        except Exception as e:
+            raise ValueError(str(e))
+
     def delete_data_from_table(
         self,
         table_name,
@@ -254,3 +278,33 @@ class DataBaseCrud:
         except Exception as e:
             self.db.rollback()
             raise Exception(f"Error dropping table: {str(e)}")
+
+    def send_raw_sql_command(
+        self,
+        sql_command: str,
+    ):
+        try:
+            if not sql_command.strip():
+                raise ValueError("SQL command cannot be empty")
+            
+            with self.db.begin():
+                result = self.db.execute(text(sql_command))
+            
+                if result.returns_rows:
+                    rows = result.fetchall()
+                    columns = result.keys()
+                    converted_rows = [
+                    zip(columns, row)
+                    for row in rows
+                    ]
+
+                    print(converted_rows)
+
+                    return converted_rows
+                else:
+                    return {
+                        "rowAffected": result.rowcount,
+                    }        
+        except Exception as raised_exception:
+            self.db.rollback()
+            raise ValueError(f"Error executing SQL command: {str(raised_exception)}")
