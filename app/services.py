@@ -134,3 +134,13 @@ class DataBaseService:
             return success_service_result(DeleteResponse.model_validate(result))
         except Exception as raised_exception:
             return failed_service_result(raised_exception)
+    
+    def send_raw_sql_command(
+        self,
+        sql_command: str
+    ):
+        try:
+            result = self.crud.send_raw_sql_command(sql_command)
+            return result
+        except Exception as raised_exception:
+            return str(raised_exception)

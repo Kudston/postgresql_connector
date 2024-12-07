@@ -80,6 +80,15 @@ def get_table_data(
     )
     return handle_result(result, TableDataOut)
 
+@app.get("/send-sql-command")
+def send_sql_command(
+    sql_command: str,
+    db_service: DataBaseService = Depends(initiate_database_service)
+):
+    result = db_service.send_raw_sql_command(sql_command=sql_command)
+    return result
+
+
 @app.put("/update-record", response_model=SingleTableDataOut)
 def update_table_data(
     data: TableDataUpdateIn,
@@ -107,4 +116,3 @@ def delete_table(
 ):
     result = db_service.delete_table(table_name)
     return handle_result(result, expected_schema=DeleteResponse)
-
