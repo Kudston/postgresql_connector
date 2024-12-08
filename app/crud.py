@@ -7,7 +7,7 @@ from sqlalchemy.types import (
 )
 from typing import Dict
 from schemas import TableSchema
-from sqlalchemy import MetaData, Table, Column, inspect, text, func
+from sqlalchemy import MetaData, Table, Column, inspect, text, func, BigInteger
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -59,12 +59,11 @@ class DataBaseCrud:
 
             columns = [
                 Column('id', Integer, primary_key=True, autoincrement=True),
-                Column('created_at', DateTime(timezone=True), server_default=func.now()),
-                Column('updated_at', DateTime(timezone=True), 
-                    server_default=func.now(),
-                    onupdate=func.now())
+                Column('created_at', BigInteger(), server_default=func.extract('epoch', func.now())),
+                Column('updated_at', BigInteger(), server_default=func.extract('epoch', func.now()),
+                       onupdate=func.extract('epoch', func.now())),
                 ]
-
+            
             for col in table_data.columns:
                 if col.type.lower() not in type_mapping:
                     raise Exception(
@@ -293,18 +292,15 @@ class DataBaseCrud:
                 if result.returns_rows:
                     rows = result.fetchall()
                     columns = result.keys()
-                    converted_rows = [
-                    zip(columns, row)
-                    for row in rows
-                    ]
-
-                    print(converted_rows)
-
-                    return converted_rows
+                    rows_as_dict = [dict(zip(columns, row)) for row in rows]
+                    return {
+                        "rows":rows_as_dict,
+                        "rows_count": len(rows_as_dict),
+                        }
                 else:
                     return {
-                        "rowAffected": result.rowcount,
-                    }        
+                        "rows_count": result.rowcount,
+                    }
         except Exception as raised_exception:
             self.db.rollback()
             raise ValueError(f"Error executing SQL command: {str(raised_exception)}")
