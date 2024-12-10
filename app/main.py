@@ -38,9 +38,14 @@ def welcome():
 async def create_table(
     table_data: TableSchema,
     generate_datetime_columns: bool = Query(False, description="Automatically adds created_at and updated_at datetime columns."),
+    autogenerate_id_column: bool = Query(False, description="Autogenerate id column."),
     db_service: DataBaseService = Depends(initiate_database_service)
 ):
-    result = db_service.create_table(table_data, generate_datetime_columns)
+    result = db_service.create_table(
+        table_data = table_data,
+        autogenerate_id_column=autogenerate_id_column,
+        generate_datetime_columns=generate_datetime_columns,
+    )
     return handle_result(result, TableCreateOut)
 
 @app.post("/insert-data", response_model=TableDataOut)
