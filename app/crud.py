@@ -44,7 +44,8 @@ class DataBaseCrud:
 
     def create_table(
         self,
-        table_data: TableSchema
+        table_data: TableSchema,
+        generate_datetime_columns: bool,
     ):
         try:
             inspector = inspect(self.db.bind)
@@ -59,11 +60,12 @@ class DataBaseCrud:
 
             columns = [
                 Column('id', Integer, primary_key=True, autoincrement=True),
-                Column('created_at', BigInteger(), server_default=func.extract('epoch', func.now())),
-                Column('updated_at', BigInteger(), server_default=func.extract('epoch', func.now()),
-                       onupdate=func.extract('epoch', func.now())),
                 ]
-            
+            if generate_datetime_columns:
+                columns.append(Column('created_at', BigInteger(), server_default=func.extract('epoch', func.now())))
+                columns.append(Column('updated_at', BigInteger(), server_default=func.extract('epoch', func.now()),
+                                onupdate=func.extract('epoch', func.now())))
+
             for col in table_data.columns:
                 if col.type.lower() not in type_mapping:
                     raise Exception(
