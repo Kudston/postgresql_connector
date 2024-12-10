@@ -28,12 +28,14 @@ class DataBaseService:
     def create_table(
         self,
         table_data: TableSchema,
+        autogenerate_id_column: bool,
         generate_datetime_columns: bool,
     )->Union[ServiceResult, Exception]:
         try:
             result = self.crud.create_table(
                 table_data=table_data, 
-                generate_datetime_columns=generate_datetime_columns
+                generate_datetime_columns=generate_datetime_columns,
+                autogenerate_id_key=autogenerate_id_column,
             )
             result_dict = {
                 'message':result['message'],

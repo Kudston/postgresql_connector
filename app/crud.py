@@ -46,6 +46,7 @@ class DataBaseCrud:
         self,
         table_data: TableSchema,
         generate_datetime_columns: bool,
+        autogenerate_id_key: bool,
     ):
         try:
             inspector = inspect(self.db.bind)
@@ -57,10 +58,11 @@ class DataBaseCrud:
                 raise Exception(f"Table must have more than one column. Current column count: {len(table_data.columns)}")
             
             metadata = MetaData()
+            #columns table
+            columns = []
 
-            columns = [
-                Column('id', Integer, primary_key=True, autoincrement=True),
-                ]
+            if autogenerate_id_key:
+                columns.append(Column('id', Integer, primary_key=True, autoincrement=True))
             if generate_datetime_columns:
                 columns.append(Column('created_at', BigInteger(), server_default=func.extract('epoch', func.now())))
                 columns.append(Column('updated_at', BigInteger(), server_default=func.extract('epoch', func.now()),
