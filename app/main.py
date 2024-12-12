@@ -1,19 +1,18 @@
 from contextlib import asynccontextmanager
-from database import engine, open_db_connections, close_db_connections
+from database import get_engine, close_db_connections
 from fastapi import FastAPI, APIRouter, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from schemas import TableCreateOut, TableSchema, TableDataOut, TableDataIn, DeleteResponse, SingleTableDataOut, TableDataUpdateIn
 from dependencies import initiate_database_service
 from service_results import handle_result
 from services import DataBaseService
-from models import Base
 from config import Settings
 from uuid import uuid4
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     ##open db connections
-    open_db_connections()
+    get_engine()
     yield
     ##close db connections
     close_db_connections()
