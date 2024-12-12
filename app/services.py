@@ -149,4 +149,4 @@ class DataBaseService:
             result = self.crud.send_raw_sql_command(sql_command)
             return result
         except Exception as raised_exception:
-            return str(raised_exception)
+            return ServiceResult(data={},success=False, message=str(raised_exception))
