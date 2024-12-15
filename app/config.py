@@ -8,7 +8,7 @@ class Settings:
         self.db_name = os.getenv('DB_NAME')
         self.db_user = os.getenv('DB_USER')
         self.db_host = os.getenv('DB_HOST')
-        self.db_port = int(os.getenv('DB_PORT'))
+        self.db_port = int(os.getenv('PGB_LISTEN_PORT'))
         self.db_password = os.getenv('DB_PASSWORD')
     
     def get_full_db_url(self):

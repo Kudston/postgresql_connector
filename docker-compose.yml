@@ -8,7 +8,7 @@ services:
     env_file:
       - .env
     deploy:
-      replicas: 15
+      replicas: 4
       resources:
         limits:
           cpus: '0.50'
@@ -25,10 +25,10 @@ services:
     image: edoburu/pgbouncer:latest
     environment:
       - DB_HOST=db
-      - DB_USER=kudston
-      - DB_PASSWORD=example
-      - DB_DATABASE=postgres
-      - LISTEN_PORT=6432
+      - DB_USER="${DB_USER}"
+      - DB_PASSWORD="${DB_PASSWORD}"
+      - DB_DATABASE="${DB_NAME}"
+      - LISTEN_PORT="${PGB_LISTEN_PORT}"
       - AUTH_TYPE=plain
       - AUTH_FILE=/pgbouncer/users.txt
     ports:
@@ -45,8 +45,8 @@ services:
     image: postgres
     restart: always
     shm_size: 128mb
-    ports:
-      - "5432:5432"
+    # ports:
+    #   - "5432:5432"
     environment:
       POSTGRES_PASSWORD: example
       POSTGRES_USER: kudston

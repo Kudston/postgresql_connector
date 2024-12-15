@@ -56,7 +56,7 @@ async def insert_data(
     return handle_result(result, TableDataOut)
 
 @app.get("/get-data-by-id", response_model=SingleTableDataOut)
-def get_table_data_id(
+async def get_table_data_id(
     table_name: str = Query(),
     data_id: str = Query(),
     db_service: DataBaseService = Depends(initiate_database_service)
@@ -68,7 +68,7 @@ def get_table_data_id(
     return handle_result(result, SingleTableDataOut)
 
 @app.get("/get-datas", response_model=TableDataOut)
-def get_table_data(
+async def get_table_data(
     table_name: str = Query(), 
     skip: int = Query(default=0), 
     limit: int = Query(default=100), 
@@ -86,7 +86,7 @@ def get_table_data(
     return handle_result(result, TableDataOut)
 
 @app.get("/send-sql-command")
-def send_sql_command(
+async def send_sql_command(
     sql_command: str,
     db_service: DataBaseService = Depends(initiate_database_service)
 ):
@@ -95,7 +95,7 @@ def send_sql_command(
 
 
 @app.put("/update-record", response_model=SingleTableDataOut)
-def update_table_data(
+async def update_table_data(
     data: TableDataUpdateIn,
     db_service: DataBaseService = Depends(initiate_database_service)
 ):
@@ -103,7 +103,7 @@ def update_table_data(
     return handle_result(result, expected_schema=SingleTableDataOut)
 
 @app.delete("/delete-data", response_model=DeleteResponse)
-def delete_table_data(
+async def delete_table_data(
     table_name: str,
     data_id: str,
     db_service: DataBaseService = Depends(initiate_database_service)
